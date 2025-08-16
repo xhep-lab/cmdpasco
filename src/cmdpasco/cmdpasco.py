@@ -80,10 +80,9 @@ def line_none(func):
     @wraps(func)
     def line_none_func(this, line):
         if line:
+            expected = func.__name__[3:]
             console.print(
-                f"Argument error. Expected\n\n{
-                    func.__name__[
-                        3:]} # no arguments",
+                f"Argument error. Expected\n\n{expected} # no arguments",
                 style="bold red")
             return False
         return func(this)
