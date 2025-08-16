@@ -45,11 +45,9 @@ class line_regex:
         @wraps(func)
         def line_regex_func(this, line):
             if self.r.match(line) is None:
+                expected = func.__name__[3:] + " " + self.example
                 console.print(
-                    f"Argument error. Expected e.g.\n\n{
-                        func.__name__[
-                            3:]} {
-                        self.example}",
+                    f"Argument error. Expected e.g.\n\n{expected}",
                     style="bold red")
                 return False
             return func(this, line)
