@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cmdpasco"
+version = "1.0.0"
+dependencies = [
+  "cmd2",
+  "matplotlib",
+  "numpy",
+  "rich",
+  'pasco @ git+https://github.com/xhep-lab/pasco_python.git',
+]
+requires-python = ">=3.11"
+authors = [
+  {name = "Andrew Fowlie", email = "andrew.fowlie@xjtlu.edu.cn"}
+]
+maintainers = [
+  {name = "Andrew Fowlie", email = "andrew.fowlie@xjtlu.edu.cn"}
+]
+description = "cmd prompt interface to PASCO devices"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E.*"]
+
+[project.scripts]
+cmdpasco = "cmdpasco:cmdpasco.cli"
