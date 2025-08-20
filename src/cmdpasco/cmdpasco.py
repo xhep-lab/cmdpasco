@@ -106,10 +106,16 @@ class PASCOShell(cmd2.Cmd):
     default_prompt = '(disconnected) '
     _devices = {}
 
+    @line_none
+    def do_quit(self):
+        self.disconnect()
+        return True
+
     @property
     def devices(self):
-        for name, device in self._devices.items():
+        for name, device in self._devices.copy().items():
             if not device.is_connected():
+                console.print(f"Device {device.name} disconnected", style="bold red")
                 del self._devices[name]
         return self._devices
 
@@ -137,29 +143,39 @@ class PASCOShell(cmd2.Cmd):
 
         device.measurements = device.get_measurement_list()
         self._devices[id_] = device
+        console.print(f"Device {device.name} connected", style="bold green")
 
-    @line_none
-    def do_disconnect(self):
+    def disconnect(self):
         "Disconnect devices"
         for device in self.devices.values():
             device.disconnect()
         self.devices.clear()
 
+    @line_none
+    def do_disconnect(self):
+        "Disconnect devices"
+        self.disconnect()
+
     @require_connection
     @line_none
     def do_info(self):
         "Summarize available measurements and sensors"
+        with console.pager():
+            console.print(self.info())
+        
+    def info(self):
+        info = {}
         for id_, device in self.devices.items():
-            console.print(id_, style="bold blue underline2")
+            info[device.name] = {}
             for sensor in device.get_sensor_list():
-                console.print(sensor, style="bold blue underline")
+                info[device.name][sensor] = {}
                 for measurement in device.get_measurement_list(sensor):
                     sensor_id = device._measurement_sensor_ids[measurement]
                     for m in device._device_measurements[sensor_id].values():
                         if m['NameTag'] == measurement:
-                            unit = device.get_measurement_unit(measurement)
-                            console.print(f"{measurement} ({unit})")
-                            console.print(m, style="italic")
+                            info[device.name][sensor][measurement] = m
+                            break
+        return info
 
     @line_none
     def do_scan(self):
