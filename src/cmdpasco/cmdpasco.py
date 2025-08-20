@@ -115,7 +115,8 @@ class PASCOShell(cmd2.Cmd):
     def devices(self):
         for name, device in self._devices.copy().items():
             if not device.is_connected():
-                console.print(f"Device {device.name} disconnected", style="bold red")
+                console.print(
+                    f"Device {device.name} disconnected", style="bold red")
                 del self._devices[name]
         return self._devices
 
@@ -162,7 +163,7 @@ class PASCOShell(cmd2.Cmd):
         "Summarize available measurements and sensors"
         with console.pager():
             console.print(self.info())
-        
+
     def info(self):
         info = {}
         for id_, device in self.devices.items():
@@ -196,17 +197,8 @@ class PASCOShell(cmd2.Cmd):
             console.print("No devices found", style="bold red")
 
     def _header(self):
-        units = [device.get_measurement_unit_list(
-            device.measurements) for device in self.devices.values()]
-        units = np.concatenate(units)
-
-        measurements = [
-            device.measurements for device in self.devices.values()]
-        measurements = np.concatenate(measurements)
-
-        labels = ["time (seconds)"] + \
-            [f"{m} ({u})" for m, u in zip(units, measurements)]
-
+        labels = [f"{device.name} {m} ({device.get_measurement_unit(m)})" for device in self.devices.values() for m in
+                  device.measurements]
         return ", ".join(labels)
 
     @require_connection
@@ -218,12 +210,16 @@ class PASCOShell(cmd2.Cmd):
         @param period Period in seconds between measurements
         """
         def record():
+            line = []
             before = time.time()
-            data = [d for device in self.devices.values()
-                    for d in device.read_data_list(device.measurements)]
+
+            for device in self.devices.values():
+                result = device.read_data_list(device.measurements)
+                line += [result[k] for k in device.measurements]
+
             after = time.time()
             timing = 0.5 * (before + after)
-            return [timing] + data
+            return [timing] + line
 
         start = time.time()
         data = []
@@ -236,7 +232,7 @@ class PASCOShell(cmd2.Cmd):
             except KeyboardInterrupt:
                 pass
 
-        data = np.array(data)
+        data = np.array(data, dtype=float)
         data[:, 0] -= start
         file_name = time.strftime("cmdpasco_data_%Y_%m_%d_%H_%M_%S.txt")
         np.savetxt(file_name, data, header=self._header(), delimiter=",")
