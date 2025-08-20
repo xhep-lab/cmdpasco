@@ -44,6 +44,7 @@ class line_regex:
     def __call__(self, func):
         @wraps(func)
         def line_regex_func(this, line):
+            line = str(line)
             if self.r.match(line) is None:
                 expected = func.__name__[3:] + " " + self.example
                 console.print(
@@ -115,7 +116,7 @@ class PASCOShell(cmd2.Cmd):
     @property
     def prompt(self):
         if self.devices:
-            ids_ = ", ".join(self.devices.keys())
+            ids_ = ", ".join([device.name for device in self.devices.values()])
             return f"({ids_}) "
         return self.default_prompt
 
@@ -141,7 +142,7 @@ class PASCOShell(cmd2.Cmd):
     def do_disconnect(self):
         "Disconnect devices"
         for device in self.devices.values():
-            device.disonnect()
+            device.disconnect()
         self.devices.clear()
 
     @require_connection
@@ -151,10 +152,14 @@ class PASCOShell(cmd2.Cmd):
         for id_, device in self.devices.items():
             console.print(id_, style="bold blue underline2")
             for sensor in device.get_sensor_list():
-                console.print(sensor, style="bold underline")
+                console.print(sensor, style="bold blue underline")
                 for measurement in device.get_measurement_list(sensor):
-                    unit = device.get_measurement_unit(measurement)
-                    console.print(f"{measurement} ({unit})")
+                    sensor_id = device._measurement_sensor_ids[measurement]
+                    for m in device._device_measurements[sensor_id].values():
+                        if m['NameTag'] == measurement:
+                            unit = device.get_measurement_unit(measurement)
+                            console.print(f"{measurement} ({unit})")
+                            console.print(m, style="italic")
 
     @line_none
     def do_scan(self):
@@ -198,10 +203,9 @@ class PASCOShell(cmd2.Cmd):
         """
         def record():
             before = time.time()
-            data = [device.read_data_list(device.measurements)
-                    for device in self.devices.values()]
+            data = [d for device in self.devices.values()
+                    for d in device.read_data_list(device.measurements)]
             after = time.time()
-            data = np.concatenate(data).tolist()
             timing = 0.5 * (before + after)
             return [timing] + data
 
@@ -242,7 +246,7 @@ class PASCOShell(cmd2.Cmd):
 
         data_x = [np.nan]
         data_y = [[np.nan]] * len(devices)
-        unit_x = devices.values()[0].get_measurement_unit(measurement)
+        unit_x = list(devices.values())[0].get_measurement_unit(measurement)
 
         plt.ion()
         lines = plt.plot(data_x, data_y, label=devices.keys())
