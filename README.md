@@ -37,6 +37,28 @@ For help, enter `?` or `help` at the prompt. There are commands for
 - `record`: record data from connected devices to disk
 - `watch`: plot data from connected devices in real time
 
+E.g.,
+
+```bash
+andrew@workstation:~$ cmdpasco
+Welcome to the PASCO shell. Type help or ? to list commands.
+
+(disconnected) ?
+
+Documented commands (use 'help -v' for verbose/'help <topic>' for details):
+===========================================================================
+alias       edit     info   record        scan   shortcuts
+connect     help     macro  run_pyscript  set    watch    
+disconnect  history  quit   run_script    shell
+
+(disconnected) help connect
+Connect by ID number written on device
+
+@param id_ ID number on device with form e.g., 344-124
+(disconnected) quit
+andrew@workstation:~$ 
+```
+
 ## 💡 Contribute
 
 Contributions are strongly enouraged, especially from students using PASCO devices. Possibilities include:
@@ -48,3 +70,4 @@ Contributions are strongly enouraged, especially from students using PASCO devic
 - And of course bug fixes!
   
 Please feel free to make a pull request or raise an issue.
+
