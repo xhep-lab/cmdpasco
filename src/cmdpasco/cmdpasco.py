@@ -233,6 +233,10 @@ class PASCOShell(cmd2.Cmd):
             except KeyboardInterrupt:
                 pass
 
+        if not data:
+            console.print(f"No data recorded", style="bold")
+            return
+
         data = np.array(data, dtype=float)
         data[:, 0] -= start
         file_name = time.strftime("cmdpasco_data_%Y_%m_%d_%H_%M_%S.txt")
