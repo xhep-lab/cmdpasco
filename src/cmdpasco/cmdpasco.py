@@ -108,6 +108,7 @@ class PASCOShell(cmd2.Cmd):
 
     @line_none
     def do_quit(self):
+        "Quit the PASCO shell"
         self.disconnect()
         return True
 
